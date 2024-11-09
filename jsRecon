@@ -1,0 +1,84 @@
+#!/usr/bin/python3
+# jsRecon: extract links, endpoints from javascript 
+# Help: ./jsRecon <url>
+# Author: @cyb3rf034r3ss
+from colorama import Fore
+import requests
+import re
+import os
+from art import *
+import sys
+
+if os.name == "posix":
+   os.system('clear')
+else:
+   exit(0)
+
+print(text2art("jsRecon"))
+print(Fore.YELLOW+"[!] jsRecon: Extract Links, Endpoints From Javascript"+Fore.WHITE)
+print(Fore.BLUE+"                Author: @cyb3rf034r3ss"+Fore.WHITE)
+print()
+
+if len(sys.argv) == 2:
+   pass
+else:
+   print(Fore.RED+"[-] Help: ./jsRecon <url>"+Fore.WHITE)
+   print()
+   exit(0)
+
+url = sys.argv[1]
+
+print(Fore.BLUE+"[-] Target_URI: "+Fore.WHITE, url)
+
+get_req = ""
+
+try:
+    get_req = requests.get(url)
+    if get_req.status_code == 404:
+       print(Fore.RED+"[!] Page not found"+Fore.WHITE)
+       print()
+       exit(0)
+    elif get_req.status_code == 401:
+       print(Fore.RED+"[!] Unauthorised - You can't access this resource"+Fore.WHITE)
+       print()
+       exit(0)
+    elif get_req.status_code == 301:
+       print(Fore.RED+"[!] Can't follow redirect"+Fore.WHITE)
+       print()
+       exit(0)
+    else:
+       pass
+except requests.exceptions.ConnectionError:
+    print()
+    print(Fore.RED+"[!] Fail to resolve address"+Fore.WHITE)
+    print()
+    exit(0)
+
+print(Fore.BLUE+"[-] Status Code: "+Fore.WHITE, get_req.status_code)
+print(Fore.BLUE+"[-] Content Length: "+Fore.WHITE, get_req.headers.get('Content-Length'))
+print(Fore.BLUE+"[-] Server: "+Fore.WHITE, get_req.headers.get('Server'))
+print()
+
+links = re.findall("(?:https?:\/\/[^\/\s]+)?\/(?:[a-zA-Z0-9_\-\/]+\.js)", get_req.text)
+lnk = []
+for l in links:
+    if l.startswith('https'):
+       pass
+    else:
+       def remove_trailing_slash(uri):
+           if uri.endswith('/'):
+              uri = uri[:-1]
+           return uri
+       endpoints = requests.get(remove_trailing_slash(url)+l).text
+       endp = re.findall("(?:\/[a-zA-Z0-9_\-\/]+)", endpoints)
+       for end in endp:
+           def remove_begin_slash(en):
+               if en.startswith('/'):
+                  en = en[:-1]
+               return en
+           if len(end) == 1 or len(end) == 2 or len(end) == 3 or len(end) == 4 or len(end) == 5 or len(end) == 6 or end == "/x-www-form-urlencoded" or end == "/" or end == "/script" or end == "//script" or len(end.split('/')) == 2 or len(end.split('/')) == 3 or len(end.split('/')) == 4:
+              pass
+           else:
+                print(end)
+
+
